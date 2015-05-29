@@ -5,7 +5,7 @@ import numpy as np
 TAN_H = 0
 
 #the rate at which the neural net learns
-LEARN_RATE = 0.1 
+LEARN_RATE = 0.1
 
 
 def Internalerror(prevWeights, prevError, z): #pylint: disable=C0103,C0103,C0103,C0103
@@ -28,6 +28,7 @@ def Finalerror(costPrime, sigmaPZ):
 		Returns:
 			the error for the last layer in a neural net
 	"""
+	
 	return costPrime*sigmaPZ
 
 def Cost(output, goal):
@@ -71,9 +72,7 @@ def Activateprime(x):
 		TODO: 
 			make this dynamic so that I don't have to calculate a new derivative every time I change the activation function
 	"""
-	
 	return (17/15) * ((np.cosh((2.0/3) * x)** -1) ** 2)
-
 
 
 class FCHiddenNetwork:
@@ -131,7 +130,6 @@ class FCHiddenNetwork:
 		return inputs
 		
 
-		return inputs
 	#@profile
 	def feedforwardfb(self, inputs):
 		"""runs a set of inputs through the neural net
@@ -157,7 +155,7 @@ class FCHiddenNetwork:
 		a.append(inputs)
 		return a, z
 
-	@profile
+	#@profile
 	def backprop(self, inputs, goal):
 		"""runs a set of inputs through the neural net, then preforms back propagation based on the goal provided
 			Args:
@@ -177,28 +175,3 @@ class FCHiddenNetwork:
 			error = Internalerror(self.weights[i], error, z[i-1])
 		self.weights[0] += (a[0].T * error).dot(LEARN_RATE)
 		return cost
-	
-	def multibackprop(self, inputs, goal):
-		"""runs a set of inputs through the neural net, then preforms back propagation based on the goal provided
-			Args:
-				inputs (np.array): 1 dimensional array of inputs
-				goal (np.array): 1 dimensional array of desired outputs
-
-			Returns:
-				current error value (as a np.array)
-		"""
-		a, z = self.feedforwardfb(inputs)
-		costGrad = Costprime(a[-1], goal)
-		cost = Cost(a[-1], goal)
-		outprime = Activateprime(z[-1])
-		error = Finalerror(costGrad, outprime)
-		self.weights[1] += LEARN_RATE * (a[1].T * error)
-		newError = Internalerror(self.weights[1], error, z[0])
-		self.weights[0] += np.multiply(LEARN_RATE, (a[0].T * newError))
-		"""
-		for wIndex in range(len(self.weights)-2,0,-1):
-			self.weights[wIndex] = LEARN_RATE * (a[wIndex-1].T * error)
-			newError = (self.weights[wIndex].T.dot(error) * Activateprime(z[wIndex-1])) 
-		"""
-		return cost
-

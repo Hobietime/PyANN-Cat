@@ -5,7 +5,7 @@ import numpy as np
 TAN_H = 0
 
 #the rate at which the neural net learns
-LEARN_RATE = 0.1 
+LEARN_RATE = 0.01 
 
 
 def Internalerror(prevWeights, prevError, z): #pylint: disable=C0103,C0103,C0103,C0103
@@ -157,7 +157,7 @@ class FCHiddenNetwork:
 		a.append(inputs)
 		return a, z
 
-	@profile
+	#@profile
 	def backprop(self, inputs, goal):
 		"""runs a set of inputs through the neural net, then preforms back propagation based on the goal provided
 			Args:

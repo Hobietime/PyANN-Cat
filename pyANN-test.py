@@ -36,12 +36,14 @@ def go():
 	xor_weights.append(np.random.randn(10,101)*(1/math.sqrt(101)))
 
 
-	errorA = np.zeros((10000))
-	k = np.zeros((10000))
+	errorA = np.zeros((10))
+	k = np.zeros((10))
 	xor_net =  pANN.FCHiddenNetwork(xor_weights, bias)
-	for j in range(0,10000):
-		for i in range(0, 60000):
-			inputs = np.column_stack((MNIST_TRAIN_SET[0:784,i])).T
+	for j in range(0,10):
+		for i in range(0, 600):
+			#print (MNIST_TRAIN_SET[0:784,i]).reshape(784,1)[255]
+			#print (np.column_stack((MNIST_TRAIN_SET[0:784,i])).T[255])
+			inputs = (MNIST_TRAIN_SET[0:784,i].reshape(784,1))
 			trainingV = np.zeros((1,10))
 			trainingV[0,MNIST_TRAIN_SET[784,i]] = 1
 			goal = trainingV.T

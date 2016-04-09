@@ -4,7 +4,7 @@ from random import randint
 import math
 import time
 from tempfile import TemporaryFile
-@profile
+
 def go():
 	MNIST_TRAIN_IMG = np.fromfile('train-images-idx3-ubyte', dtype = np.uint8)
 	MNIST_TRAIN_IMG = MNIST_TRAIN_IMG[16:]
@@ -36,27 +36,27 @@ def go():
 	xor_weights.append(np.random.randn(10,101)*(1/math.sqrt(101)))
 
 
-	errorA = np.zeros((60000000))
-	k = np.zeros((100))
+	errorA = np.zeros((10000))
+	k = np.zeros((10000))
 	xor_net =  pANN.FCHiddenNetwork(xor_weights, bias)
-	for j in range(0,1):
-		for i in range(0, 600):
+	for j in range(0,10000):
+		for i in range(0, 60000):
 			inputs = np.column_stack((MNIST_TRAIN_SET[0:784,i])).T
 			trainingV = np.zeros((1,10))
 			trainingV[0,MNIST_TRAIN_SET[784,i]] = 1
 			goal = trainingV.T
-			#print inputs
-			
-			errorA[i] = xor_net.backprop(inputs, goal, 0.00014)
-			print errorA[i]
+			error = xor_net.backprop(inputs, goal, 0.00014)
+		
+		errorA[j] = error
+		print errorA[j]
 		np.random.shuffle(MNIST_TRAIN_SET.T)
 		k[j] = 0
-		for i in range(0,100):
+		for i in range(0,10000):
 			inputs = np.column_stack((MNIST_TEST_IMG[:,i])).T
 			if (MNIST_TEST_LBL[i] == np.argmax(xor_net.feedforward(inputs))):
 				k[j] += 1
 
-		k[j]
+		print k[j]
 
 	np.savetxt('testfile-2', k, delimiter=',')
 	np.savetxt('errorfile-2', errorA, delimiter=',')

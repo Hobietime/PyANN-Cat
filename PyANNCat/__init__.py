@@ -5,7 +5,8 @@ import numpy as np
 TAN_H = 0
 
 #the rate at which the neural net learns
-LEARN_RATE = 0.01 
+LEARN_RATE = 0.001
+
 
 
 def Internalerror(prevWeights, prevError, z): #pylint: disable=C0103,C0103,C0103,C0103
@@ -71,12 +72,12 @@ def Activateprime(x):
 		TODO: 
 			make this dynamic so that I don't have to calculate a new derivative every time I change the activation function
 	"""
-	
 	return (17/15) * ((np.cosh((2.0/3) * x)** -1) ** 2)
 
 
 
 class FCHiddenNetwork:
+	
 	"""This class if for building ANNs with an arbitrary amount of layers, the first layer is the input layer, the output layer is the last layer
 	All inner layers are hidden
 	There is full connectivity, use CVNetwork for convolution networks
@@ -102,6 +103,10 @@ class FCHiddenNetwork:
 		else:
 			self.weights = weights
 			self.bias = bias
+			self.oldError = []
+			self.pweights = np.copy(self.weights)
+			for i in range(len(self.pweights)):
+				self.pweights[i] = np.zeros((self.pweights[i].shape))
 		#too be added if different activation functions are used
 		"""
 		try:
@@ -131,7 +136,6 @@ class FCHiddenNetwork:
 		return inputs
 		
 
-		return inputs
 	#@profile
 	def feedforwardfb(self, inputs):
 		"""runs a set of inputs through the neural net
@@ -173,16 +177,18 @@ class FCHiddenNetwork:
 		outprime = Activateprime(z[-1])
 		error = Finalerror(costGrad, outprime)
 		for i in range(len(self.weights) - 1, 0, -1):
-			self.weights[i] += LEARN_RATE * (a[i].T * (error))
+			self.weights[i] += (LEARN_RATE*cost**2) * (a[i].T * (error))
 			error = Internalerror(self.weights[i], error, z[i-1])
-		self.weights[0] += (a[0].T * error).dot(LEARN_RATE)
+		self.weights[0] += (a[0].T * error).dot(LEARN_RATE *cost**2)
 		return cost
-	
-	def multibackprop(self, inputs, goal):
+
+	#@profile
+	def backprop(self, inputs, goal, learn_rate):
 		"""runs a set of inputs through the neural net, then preforms back propagation based on the goal provided
 			Args:
 				inputs (np.array): 1 dimensional array of inputs
 				goal (np.array): 1 dimensional array of desired outputs
+				learn_rate (float): a float thatt defines the learn rate
 
 			Returns:
 				current error value (as a np.array)
@@ -192,13 +198,62 @@ class FCHiddenNetwork:
 		cost = Cost(a[-1], goal)
 		outprime = Activateprime(z[-1])
 		error = Finalerror(costGrad, outprime)
-		self.weights[1] += LEARN_RATE * (a[1].T * error)
-		newError = Internalerror(self.weights[1], error, z[0])
-		self.weights[0] += np.multiply(LEARN_RATE, (a[0].T * newError))
-		"""
-		for wIndex in range(len(self.weights)-2,0,-1):
-			self.weights[wIndex] = LEARN_RATE * (a[wIndex-1].T * error)
-			newError = (self.weights[wIndex].T.dot(error) * Activateprime(z[wIndex-1])) 
-		"""
+		for i in range(len(self.weights) - 1, 0, -1):
+			self.weights[i] += (learn_rate*cost**2) * (a[i].T * (error))
+			error = Internalerror(self.weights[i], error, z[i-1])
+		self.weights[0] += (a[0].T * error).dot(learn_rate *cost**2)
 		return cost
 
+	def Momentumbackprop(self, inputs, goal, learn_rate, momentum):
+		"""runs a set of inputs through the neural net, then preforms back propagation based on the goal provided
+			Args:
+				inputs (np.array): 1 dimensional array of inputs
+				goal (np.array): 1 dimensional array of desired outputs
+				learn_rate (float): a float that defines the learn rate
+
+			Returns:
+				the calculated differences in the weights
+		"""
+		a, z = self.feedforwardfb(inputs)
+		costGrad = Costprime(a[-1], goal)
+		cost = Cost(a[-1], goal)
+		outprime = Activateprime(z[-1])
+		error = Finalerror(costGrad, outprime)
+		for i in range(len(self.weights) - 1, 0, -1):
+			self.weights[i] += (learn_rate*cost**2) * (a[i].T * (error)) + (self.pweights[i] * momentum)
+			self.pweights[i] = (learn_rate*cost**2) * (a[i].T * (error))
+			error = Internalerror(self.weights[i], error, z[i-1])
+		self.weights[0] += (a[0].T * error).dot(learn_rate *cost**2) + (self.pweights[0] * momentum)
+		self.pweights[0] = (a[0].T * error).dot(learn_rate *cost**2)
+
+		return cost
+
+	def miniBatchprop(self, inputs, trainAr, batchSize, learn_rate):
+		"""TO DO
+		"""
+		aC = 0
+		zC = 0
+		cost = 0
+		weights = np.copy(self.weights)
+		for i in range(len(weights)):
+			weights[i] = np.zeros(weights[i].shape)
+		for i in range(batchSize):
+			trainingV = np.zeros((1,10))
+			trainingV[0,trainAr[i]] = 1
+			goal = trainingV.T
+			a, z = self.feedforwardfb(inputs[0:784,i].reshape((784, 1)))
+			costGrad = Costprime(a[-1], goal)
+			cost += Cost(a[-1], goal)
+			outprime = Activateprime(z[-1])
+			error = Finalerror(costGrad, outprime)
+			for k in range(len(weights) - 1, 0, -1):
+				weights[k] += (learn_rate) * (a[k].T * (error))
+				error = Internalerror(self.weights[k], error, z[k-1])
+			weights[0] += (a[0].T * error).dot(learn_rate)
+
+		for j in range(len(weights)):
+			self.weights[j] += ((weights[j] + self.pweights[j]*.1) /batchSize) 
+		self.pweights = np.copy(weights)
+		cost /= float(batchSize)
+		return cost
+			

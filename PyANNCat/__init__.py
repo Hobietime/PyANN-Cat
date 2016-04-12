@@ -8,6 +8,7 @@ TAN_H = 0
 LEARN_RATE = 0.001
 
 
+
 def Internalerror(prevWeights, prevError, z): #pylint: disable=C0103,C0103,C0103,C0103
 	"""calculates the error for the internal layers
 		Args:

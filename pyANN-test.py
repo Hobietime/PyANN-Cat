@@ -5,6 +5,7 @@ import math
 import time
 from tempfile import TemporaryFile
 
+
 def go():
 	MNIST_TRAIN_IMG = np.fromfile('train-images-idx3-ubyte', dtype = np.uint8)
 	MNIST_TRAIN_IMG = MNIST_TRAIN_IMG[16:]
@@ -12,7 +13,6 @@ def go():
 	MNIST_TRAIN_IMG = MNIST_TRAIN_IMG.T/256.0-.5
 	MNIST_TRAIN_LBL = np.fromfile('train-labels-idx1-ubyte', dtype = np.uint8)
 	MNIST_TRAIN_LBL = MNIST_TRAIN_LBL[8:]
-
 	MNIST_TEST_LBL = np.fromfile('t10k-labels-idx1-ubyte', dtype = np.uint8)
 	MNIST_TEST_LBL = MNIST_TEST_LBL[8:]
 	MNIST_TEST_IMG = np.fromfile('t10k-images-idx3-ubyte', dtype = np.uint8)
@@ -70,3 +70,4 @@ def learn(MNIST_TRAIN_SET, MNIST_TEST_LBL, MNIST_TEST_IMG, xor_weights, bias):
 
 if (__name__ == "__main__"):
 	go()
+

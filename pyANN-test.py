@@ -34,7 +34,12 @@ def go():
 	bias.append(1)
 	xor_weights.append(np.random.randn(100,785)*(1/math.sqrt(785)))
 	xor_weights.append(np.random.randn(10,101)*(1/math.sqrt(101)))
+	k, errorA = learn(MNIST_TRAIN_SET, MNIST_TEST_LBL, MNIST_TEST_IMG, xor_weights, bias)
+	np.savetxt('testfile-2', k, delimiter=',')
+	np.savetxt('errorfile-2', errorA, delimiter=',')
 
+
+def learn(MNIST_TRAIN_SET, MNIST_TEST_LBL, MNIST_TEST_IMG, xor_weights, bias):
 
 	errorA = np.zeros((10))
 	k = np.zeros((10))
@@ -59,9 +64,9 @@ def go():
 				k[j] += 1
 
 		print k[j]
+	return k, errorA
 
-	np.savetxt('testfile-2', k, delimiter=',')
-	np.savetxt('errorfile-2', errorA, delimiter=',')
+
 
 if (__name__ == "__main__"):
 	go()

@@ -74,7 +74,9 @@ def Activateprime(x):
 	return (17/15) * ((np.cosh((2.0/3) * x)** -1) ** 2)
 
 
+
 class FCHiddenNetwork:
+	
 	"""This class if for building ANNs with an arbitrary amount of layers, the first layer is the input layer, the output layer is the last layer
 	All inner layers are hidden
 	There is full connectivity, use CVNetwork for convolution networks
